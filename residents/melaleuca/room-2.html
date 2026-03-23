@@ -28,7 +28,7 @@
   .flag{display:flex;align-items:center;gap:0.35rem;padding:0.35rem 0.7rem;border-radius:20px;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
   .flag.risk-high{background:var(--rose-pale);color:var(--rose)}
   .flag.risk-med{background:var(--amber-pale);color:var(--amber)}
-  .flag.risk-low{background:var(--sage-pale);color:var(--sage)}
+  .flag.risk-low{background:var(--sage-pale);color:var(--rose)}
   .flag.info{background:var(--sky-pale);color:var(--sky)}
   .section{margin:1rem 1.25rem 0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:white;animation:fadeUp 0.4s ease both}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -47,9 +47,41 @@
   .footer-value{font-size:0.78rem;color:var(--ink-soft);font-weight:500}
   .updated-dot{width:8px;height:8px;border-radius:50%;background:var(--sage-light);display:inline-block;margin-right:0.35rem}
   .facility-tag{font-size:0.68rem;color:var(--muted);text-align:right}
+  /* Lock screen */
+  .lock-screen{position:fixed;inset:0;background:var(--sage);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem}
+  .lock-box{background:white;border-radius:20px;padding:2rem 1.75rem;width:100%;max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+  .lock-logo{font-size:2rem;margin-bottom:0.5rem}
+  .lock-title{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--sage);margin-bottom:0.25rem}
+  .lock-sub{font-size:0.78rem;color:var(--muted);margin-bottom:1.5rem}
+  .lock-input{width:100%;font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:700;text-align:center;letter-spacing:0.3em;padding:0.75rem;border:2px solid var(--border);border-radius:10px;outline:none;color:var(--ink);background:var(--warm-white);transition:border-color 0.2s}
+  .lock-input:focus{border-color:var(--sage-light)}
+  .lock-input.error{border-color:var(--rose);animation:shake 0.3s ease}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .lock-btn{margin-top:1rem;width:100%;background:var(--sage);color:white;border:none;padding:0.75rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:background 0.15s}
+  .lock-btn:hover{background:#3a5232}
+  .lock-error{font-size:0.78rem;color:var(--rose);margin-top:0.6rem;min-height:1.1rem}
+  .lock-hint{font-size:0.7rem;color:var(--muted);margin-top:1rem}
+  .content-wrap{display:none}
+  .content-wrap.unlocked{display:block}
 </style>
 </head>
 <body>
+
+<!-- Lock Screen -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-logo">🏥</div>
+    <div class="lock-title">Bluecare Talleyhaven</div>
+    <div class="lock-sub">Enter staff PIN to view resident profile</div>
+    <input class="lock-input" id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••" onkeydown="if(event.key==='Enter')checkPin()">
+    <button class="lock-btn" onclick="checkPin()">Unlock</button>
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-hint">Session stays unlocked while browser is open</div>
+  </div>
+</div>
+
+<!-- Profile Content -->
+<div class="content-wrap" id="contentWrap">
 
 <div class="header">
   <div class="room-badge">Room<span>2</span></div>
@@ -191,7 +223,36 @@
   </div>
 </div>
 
+</div>
+
 <div id="profile-data" style="display:none">{"schemaVersion":1,"fullName":"John Mitchell","preferredName":"John","roomNumber":"2","ward":"Melaleuca","alertLevel":"none","alertMessage":"","flags":["falls_low","pressure","no_allergy","hearing_aid","thickened","dementia","wheelchair","diabetes","cardiac","sundowning"],"nameNote":"","language":"English","hearing":"Hearing aid left ear","vision":"Wears glasses","cognition":"Fluctuating – periods of confusion, mostly orientated","commTips":"","wakeTime":"No set routine – allow natural waking","morningRoutine":"Comfort care only, no forced routine","personalCare":"Prioritise comfort over task completion","foodFluid":": Soft diet – small amounts as tolerated","rest":"Frequent rest, sleeps most of the day","evening":"Quiet, low lighting, family presence encouraged","triggers":"Fatigue, excessive handling, noise","deescalation":"Stop care, provide reassurance, reposition for comfort","emotional":"Calm, withdrawn, occasional anxiety","fallsDetail":"Low","skin":"Very high risk – fragile, monitor all pressure areas","swallowing":"Declining – high aspiration risk","allergies":"NKDA — No Known Drug Allergies","mobility":"2 assist repositioning in bed","updatedBy":"Lincoln Huggard","updatedDate":"2026-03-21"}</div>
+
+<script>
+  (function() {
+    const PIN = '4228';
+    const SESSION_KEY = 'bct_unlocked';
+    function unlock() {
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('contentWrap').classList.add('unlocked');
+      sessionStorage.setItem(SESSION_KEY, '1');
+    }
+    // Check if already unlocked this session
+    if (sessionStorage.getItem(SESSION_KEY) === '1') { unlock(); return; }
+    document.getElementById('lockScreen').style.display = 'flex';
+    window.checkPin = function() {
+      const input = document.getElementById('pinInput');
+      const error = document.getElementById('lockError');
+      if (input.value === PIN) {
+        unlock();
+      } else {
+        input.classList.add('error');
+        error.textContent = 'Incorrect PIN — try again';
+        input.value = '';
+        setTimeout(() => { input.classList.remove('error'); error.textContent = ''; }, 1500);
+      }
+    };
+  })();
+<\/script>
 
 </body>
 </html>
