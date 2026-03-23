@@ -73,12 +73,15 @@
     <div class="lock-logo">🏥</div>
     <div class="lock-title">Bluecare Talleyhaven</div>
     <div class="lock-sub">Enter staff PIN to view resident profile</div>
-    <input class="lock-input" id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••" onkeydown="if(event.key==='Enter')checkPin()">
-    <button class="lock-btn" onclick="checkPin()">Unlock</button>
+    <input class="lock-input" id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••"
+      onkeydown="if(event.key==='Enter'){var p=document.getElementById('pinInput'),e=document.getElementById('lockError');if(p.value==='4228'){document.getElementById('lockScreen').style.display='none';document.getElementById('contentWrap').classList.add('unlocked');sessionStorage.setItem('bct_ok','1');}else{p.classList.add('error');e.textContent='Incorrect PIN — try again';p.value='';setTimeout(function(){p.classList.remove('error');e.textContent='';},1500);}}">
+    <button class="lock-btn"
+      onclick="var p=document.getElementById('pinInput'),e=document.getElementById('lockError');if(p.value==='4228'){document.getElementById('lockScreen').style.display='none';document.getElementById('contentWrap').classList.add('unlocked');sessionStorage.setItem('bct_ok','1');}else{p.classList.add('error');e.textContent='Incorrect PIN — try again';p.value='';setTimeout(function(){p.classList.remove('error');e.textContent='';},1500);}">Unlock</button>
     <div class="lock-error" id="lockError"></div>
     <div class="lock-hint">Session stays unlocked while browser is open</div>
   </div>
 </div>
+<img src onerror="if(sessionStorage.getItem('bct_ok')==='1'){document.getElementById('lockScreen').style.display='none';document.getElementById('contentWrap').classList.add('unlocked');}else{document.getElementById('lockScreen').style.display='flex';}" style="display:none">
 
 <!-- Profile Content -->
 <div class="content-wrap" id="contentWrap">
@@ -217,7 +220,7 @@
 <div class="footer">
   <div>
     <div class="footer-label">Last updated</div>
-    <div class="footer-value"><span class="updated-dot"></span>24 March 2026 — Lincoln Huggard</div>
+    <div class="footer-value"><span class="updated-dot"></span>22 March 2026 — Lincoln Huggard</div>
   </div>
   <div class="facility-tag">
     Bluecare Talleyhaven<br>Acacia Ward · Room 4
@@ -226,34 +229,7 @@
 
 </div>
 
-<div id="profile-data" style="display:none">{"schemaVersion":1,"fullName":"Sarah Collins","preferredName":"Sarah","roomNumber":"4","ward":"Acacia","alertLevel":"red","alertMessage":"HIGH FALLS RISK — Please check sensor mat placement on entry.","flags":["falls_high","thickened","dementia","wheelchair","diabetes","cardiac","sundowning"],"nameNote":"","language":"English","hearing":"Hearing aid left ear","vision":"Intact","cognition":"Intact","commTips":"","wakeTime":"~9:00am (prefers late start)","morningRoutine":"Shower after breakfast, uses phone/music","personalCare":"Directs own care – staff assist as instructed","foodFluid":"Regular","rest":"Rests intermittently due to fatigue","evening":"Late sleeper, prefers TV/music","triggers":"Loss of control, being spoken over, rushed care","deescalation":"Give control back, explain actions, respect choices","emotional":"Independent, can become frustrated if ignored","fallsDetail":"High p","skin":"At risk – prolonged sitting","swallowing":"Normal","allergies":"Penicillin","mobility":"Poor balance, impulsive transfers at times","updatedBy":"Lincoln Huggard","updatedDate":"2026-03-24"}</div>
-
-<scr' + 'ipt>
-  (function() {
-    const PIN = '4228';
-    const SESSION_KEY = 'bct_unlocked';
-    function unlock() {
-      document.getElementById('lockScreen').style.display = 'none';
-      document.getElementById('contentWrap').classList.add('unlocked');
-      sessionStorage.setItem(SESSION_KEY, '1');
-    }
-    // Check if already unlocked this session
-    if (sessionStorage.getItem(SESSION_KEY) === '1') { unlock(); return; }
-    document.getElementById('lockScreen').style.display = 'flex';
-    window.checkPin = function() {
-      const input = document.getElementById('pinInput');
-      const error = document.getElementById('lockError');
-      if (input.value === PIN) {
-        unlock();
-      } else {
-        input.classList.add('error');
-        error.textContent = 'Incorrect PIN — try again';
-        input.value = '';
-        setTimeout(() => { input.classList.remove('error'); error.textContent = ''; }, 1500);
-      }
-    };
-  })();
-</scr' + 'ipt>
+<div id="profile-data" style="display:none">{"schemaVersion":1,"fullName":"Sarah Collins","preferredName":"Sarah","roomNumber":"4","ward":"Acacia","alertLevel":"red","alertMessage":"HIGH FALLS RISK — Please check sensor mat placement on entry.","flags":["falls_high","thickened","dementia","wheelchair","diabetes","cardiac","sundowning"],"nameNote":"","language":"English","hearing":"Hearing aid left ear","vision":"Intact","cognition":"Intact","commTips":"","wakeTime":"~9:00am (prefers late start)","morningRoutine":"Shower after breakfast, uses phone/music","personalCare":"Directs own care – staff assist as instructed","foodFluid":"Regular","rest":"Rests intermittently due to fatigue","evening":"Late sleeper, prefers TV/music","triggers":"Loss of control, being spoken over, rushed care","deescalation":"Give control back, explain actions, respect choices","emotional":"Independent, can become frustrated if ignored","fallsDetail":"High p","skin":"At risk – prolonged sitting","swallowing":"Normal","allergies":"Penicillin","mobility":"Poor balance, impulsive transfers at times","updatedBy":"Lincoln Huggard","updatedDate":"2026-03-22"}</div>
 
 </body>
 </html>
