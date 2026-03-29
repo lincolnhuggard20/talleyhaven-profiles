@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunridge — Resident Profile Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #4a6741;
+    --sage-light: #7a9c70;
+    --sage-pale: #eef3ed;
+    --warm-white: #faf9f6;
+    --ink: #1e2420;
+    --ink-soft: #3d4a3e;
+    --muted: #7a8a7b;
+    --border: #d4ddd3;
+    --amber: #c8820a;
+    --amber-pale: #fdf5e6;
+    --rose: #b84c4c;
+    --rose-pale: #fdf0f0;
+    --sky: #2e6b8a;
+    --sky-pale: #eef5f9;
+    --white: #fff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f0f2ef;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* Top bar */
+  .topbar {
+    background: var(--sage);
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+
+  .topbar-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: white;
+  }
+
+  .topbar-sub {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.65);
+    margin-top: 0.1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .topbar-btns { display: flex; gap: 0.5rem; align-items: center; }
+
+  .generate-btn {
+    background: white;
+    color: var(--sage);
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .generate-btn:hover {
+    background: var(--sage-pale);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  .load-btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .load-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+
+  .load-banner {
+    display: none;
+    background: var(--sky-pale);
+    border-bottom: 2px solid var(--sky);
+    padding: 0.65rem 1.5rem;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    color: var(--sky);
+    font-weight: 500;
+  }
+  .load-banner.visible { display: flex; }
+  .load-banner strong { font-weight: 700; }
+
+  /* Layout */
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  /* Cards */
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    animation: fadeUp 0.35s ease both;
+  }
+
+  .card:nth-child(2) { animation-delay: 0.05s; }
+  .card:nth-child(3) { animation-delay: 0.1s; }
+  .card:nth-child(4) { animation-delay: 0.15s; }
+  .card:nth-child(5) { animation-delay: 0.2s; }
+  .card:nth-child(6) { animation-delay: 0.25s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    background: var(--sage-pale);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-icon { font-size: 1rem; }
+
+  .card-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--sage);
+  }
+
+  .card-body {
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  /* Field rows */
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 500px) {
+    .field-row { grid-template-columns: 1fr; }
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--warm-white);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--sage-light);
+    box-shadow: 0 0 0 3px rgba(74, 103, 65, 0.1);
+  }
+
+  textarea { min-height: 70px; }
+
+  /* Flag checkboxes */
+  .flags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .flag-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--warm-white);
+  }
+
+  .flag-check:hover { border-color: var(--sage-light); background: var(--sage-pale); }
+
+  .flag-check input { display: none; }
+
+  .flag-check.checked {
+    border-color: var(--sage);
+    background: var(--sage-pale);
+  }
+
+  .flag-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .flag-check.checked .flag-dot {
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+
+  .flag-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  /* Alert level */
+  .alert-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .alert-opt {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: white;
+  }
+
+  .alert-opt[data-val="none"].active { border-color: var(--sage); background: var(--sage-pale); color: var(--sage); }
+  .alert-opt[data-val="amber"].active { border-color: var(--amber); background: var(--amber-pale); color: var(--amber); }
+  .alert-opt[data-val="red"].active { border-color: var(--rose); background: var(--rose-pale); color: var(--rose); }
+
+  /* Care plan import modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.visible { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: fadeUp 0.25s ease;
+  }
+
+  .modal-header {
+    background: var(--sage);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+  }
+
+  .modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.35); }
+
+  .modal-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    overflow-y: auto;
+  }
+
+  .modal-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.55;
+    background: var(--sage-pale);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+  }
+
+  .modal-hint strong { color: var(--sage); }
+
+  .modal-textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    background: var(--warm-white);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem;
+    width: 100%;
+    min-height: 220px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .modal-textarea:focus {
+    border-color: var(--sage-light);
+    box-shadow: 0 0 0 3px rgba(74,103,65,0.1);
+  }
+
+  .modal-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.6rem;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .modal-cancel {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.55rem 1.1rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modal-cancel:hover { border-color: var(--muted); color: var(--ink); }
+
+  .modal-import {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.55rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--sage);
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .modal-import:hover { background: #3a5232; }
+  .modal-import:disabled { background: var(--muted); cursor: not-allowed; }
+
+  .parsing-indicator {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--sage);
+    font-weight: 500;
+  }
+  .parsing-indicator.visible { display: flex; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--sage-pale);
+    border-top-color: var(--sage);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Output area */
+  .output-section {
+    display: none;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+
+  .output-section.visible { display: block; animation: fadeUp 0.3s ease; }
+
+  .output-header {
+    background: var(--sky-pale);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .output-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--sky);
+  }
+
+  .copy-btn, .download-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn { background: var(--sky-pale); color: var(--sky); margin-right: 0.4rem; }
+  .copy-btn:hover { background: #d0e8f2; }
+
+  .download-btn { background: var(--sage); color: white; }
+  .download-btn:hover { background: #3a5232; }
+
+  .output-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre;
+    background: #f8faf7;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.6;
+  }
+
+  .output-actions {
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filename-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 999;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* GitHub settings panel */
+  .github-panel {
+    display: none;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    animation: fadeUp 0.3s ease;
+  }
+  .github-panel.visible { display: block; }
+
+  .github-panel-header {
+    background: #0d1117;
+    color: white;
+    padding: 0.7rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .github-panel-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.85);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .github-panel-body {
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .github-hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+    background: var(--sage-pale);
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+  }
+
+  .github-connected {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--sage);
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    background: var(--sage-pale);
+    border-radius: 8px;
+  }
+  .github-connected.visible { display: flex; }
+
+  .publish-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    background: #238636;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    justify-content: center;
+  }
+  .publish-btn:hover { background: #2ea043; }
+  .publish-btn:disabled { background: var(--muted); cursor: not-allowed; }
+
+  .settings-btn {
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,0.25); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Resident Profile Editor</div>
+    <div class="topbar-sub">BLUECARE TALLEYHAVEN — NFC DOOR PROFILE SYSTEM</div>
+  </div>
+  <div class="topbar-btns">
+    <button class="load-btn" onclick="openImportModal()">
+      📋 Import Care Plan
+    </button>
+    <button class="load-btn" onclick="openGithubLoadModal()">
+      ☁️ Load from GitHub
+    </button>
+    <button class="load-btn" onclick="document.getElementById('fileInput').click()">
+      📂 Load File
+    </button>
+    <button class="generate-btn" onclick="generateProfile()">
+      ⚡ Generate Profile
+    </button>
+  </div>
+  <input type="file" id="fileInput" accept=".html" style="display:none" onchange="loadProfile(event)">
+</div>
+<div class="load-banner" id="loadBanner">
+  <span>✅ Loaded: <strong id="loadedFilename"></strong> — fields populated from existing profile. Make your changes and regenerate.</span>
+</div>
+
+<!-- Care Plan Import Modal -->
+<div class="modal-overlay" id="importModal" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Import from Care Plan Summary</span>
+      <button class="modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-hint">
+        <strong>Paste any text from the resident's care plan</strong> — a summary, copied sections, or your own notes. The editor will extract what it can and pre-fill the form. You can review and edit everything before generating.
+      </div>
+      <textarea class="modal-textarea" id="carePlanText" placeholder="Paste care plan text here…&#10;&#10;e.g. Resident: Margaret Thompson, Room 4, Banksia Ward&#10;Preferred name: Maggie&#10;Mobility: 2-person assist, walking frame&#10;Diet: minced and moist, thickened fluids&#10;Cognition: moderate dementia, orientated to person only&#10;Falls risk: high — sensor mat in use&#10;Known triggers: loud noises, rushed care&#10;Communication: hard of hearing left ear, speak clearly on right side…"></textarea>
+      <div class="parsing-indicator" id="parsingIndicator">
+        <div class="spinner"></div>
+        <span>Extracting information…</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeImportModal()">Cancel</button>
+      <button class="modal-import" id="importBtn" onclick="runImport()">✨ Extract & Fill Fields</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- GitHub Load Modal -->
+<div class="modal-overlay" id="githubLoadModal" onclick="closeGithubLoadModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">☁️ Load Profile from GitHub</span>
+      <button class="modal-close" onclick="closeGithubLoadModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-hint">
+        Select the ward and room number to fetch that resident's existing profile directly from GitHub. Make your edits then hit Publish to save changes.
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Ward</label>
+          <select id="ghLoadWard">
+            <option value="acacia">🌿 Acacia</option>
+            <option value="banksia">🌼 Banksia</option>
+            <option value="grevillea">🌺 Grevillea</option>
+            <option value="jacaranda">💜 Jacaranda</option>
+            <option value="melaleuca">🌿 Melaleuca</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Room Number</label>
+          <input type="text" id="ghLoadRoom" placeholder="e.g. 12">
+        </div>
+      </div>
+      <div class="field">
+        <label>GitHub Token (required to fetch)</label>
+        <input type="password" id="ghLoadToken" placeholder="ghp_...">
+      </div>
+      <div class="parsing-indicator" id="ghLoadIndicator">
+        <div class="spinner"></div>
+        <span>Fetching from GitHub…</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeGithubLoadModal()">Cancel</button>
+      <button class="modal-import" onclick="fetchFromGithub()">☁️ Fetch & Load</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Identity -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🏷️</span>
+      <span class="card-title">Identity & Room</span>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="fullName" placeholder="e.g. Dorothy Hartley">
+        </div>
+        <div class="field">
+          <label>Preferred Name / Nickname</label>
+          <input type="text" id="preferredName" placeholder="e.g. Dot">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Room Number</label>
+          <input type="text" id="roomNumber" placeholder="e.g. 12">
+        </div>
+        <div class="field">
+          <label>Ward</label>
+          <select id="ward">
+            <option value="Acacia">🌿 Acacia</option>
+            <option value="Banksia">🌼 Banksia</option>
+            <option value="Grevillea">🌺 Grevillea</option>
+            <option value="Jacaranda">💜 Jacaranda</option>
+            <option value="Melaleuca">🌿 Melaleuca</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert bar -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🚨</span>
+      <span class="card-title">Alert Banner (shown at top of profile)</span>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>Alert Level</label>
+        <div class="alert-options">
+          <div class="alert-opt active" data-val="none" onclick="setAlert(this)">None</div>
+          <div class="alert-opt" data-val="amber" onclick="setAlert(this)">⚠️ Amber Warning</div>
+          <div class="alert-opt" data-val="red" onclick="setAlert(this)">🔴 Red Alert</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Alert Message (if amber or red)</label>
+        <input type="text" id="alertMessage" placeholder="e.g. HIGH FALLS RISK — Sensor mat in use. Check placement on entry.">
+      </div>
+      <div class="field">
+        <label>NFR / Resuscitation Status</label>
+        <div class="alert-options">
+          <div class="alert-opt active" data-nfr="none" onclick="setNFR(this)">Not set</div>
+          <div class="alert-opt" data-nfr="for_resus" onclick="setNFR(this)" style="border-color:#2d5a27;color:#2d5a27;">✅ For Resuscitation</div>
+          <div class="alert-opt" data-nfr="nfr" onclick="setNFR(this)" style="border-color:#b84c4c;color:#b84c4c;">🚫 Not for Resuscitation</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Restrictive Practice (select all that apply)</label>
+        <div class="alert-options" style="flex-wrap:wrap;">
+          <div class="alert-opt" data-rp="chemical" onclick="toggleRP(this)">💊 Chemical</div>
+          <div class="alert-opt" data-rp="environmental" onclick="toggleRP(this)">🚪 Environmental</div>
+          <div class="alert-opt" data-rp="mechanical" onclick="toggleRP(this)">🔒 Mechanical</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick flags -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🚩</span>
+      <span class="card-title">Quick Risk Flags</span>
+    </div>
+    <div class="card-body">
+      <div class="flags-grid" id="flagsGrid">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Communication -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">💬</span>
+      <span class="card-title">Identity & Communication</span>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>Name note (how to address)</label>
+        <input type="text" id="nameNote" placeholder="e.g. Never 'Dorothy' unless she initiates it">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Language</label>
+          <input type="text" id="language" placeholder="e.g. English (primary)">
+        </div>
+        <div class="field">
+          <label>Hearing</label>
+          <input type="text" id="hearing" placeholder="e.g. Hearing aid right ear only">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Vision</label>
+          <input type="text" id="vision" placeholder="e.g. Reading glasses on bedside table">
+        </div>
+        <div class="field">
+          <label>Cognition</label>
+          <input type="text" id="cognition" placeholder="e.g. Mild-moderate dementia">
+        </div>
+      </div>
+      <div class="field">
+        <label>Communication Tips (shown as highlight box)</label>
+        <textarea id="commTips" placeholder="e.g. Responds well to warm hand on forearm before speaking. Allow extra processing time."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Routine -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🌅</span>
+      <span class="card-title">Routine & Care Preferences</span>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Wake Time Preference</label>
+          <input type="text" id="wakeTime" placeholder="e.g. Not before 7:30am">
+        </div>
+        <div class="field">
+          <label>Morning Routine</label>
+          <input type="text" id="morningRoutine" placeholder="e.g. Tea by window before shower. ABC Classic FM.">
+        </div>
+      </div>
+      <div class="field">
+        <label>Personal Care Notes</label>
+        <textarea id="personalCare" placeholder="e.g. Female carer preferred. Modest — explain each step before touching."></textarea>
+      </div>
+      <div class="field">
+        <label>Food & Fluid Preferences</label>
+        <textarea id="foodFluid" placeholder="e.g. IDDSI Level 5. Sweet tea 2 sugars full cream milk. Dislikes: lamb, capsicum."></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Rest / Nap Preferences</label>
+          <input type="text" id="rest" placeholder="e.g. Nap 1:30–3pm daily">
+        </div>
+        <div class="field">
+          <label>Evening Preferences</label>
+          <input type="text" id="evening" placeholder="e.g. Lights dim by 8pm. Door slightly ajar.">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Behavioural -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🤝</span>
+      <span class="card-title">Behavioural & Emotional</span>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>Known Triggers</label>
+        <textarea id="triggers" placeholder="e.g. Raised voices, being rushed, unfamiliar male carers entering without warning"></textarea>
+      </div>
+      <div class="field">
+        <label>De-escalation Approaches</label>
+        <textarea id="deescalation" placeholder="e.g. Offer cup of tea. ABC Classic FM on softly. Sit at eye level."></textarea>
+      </div>
+      <div class="field">
+        <label>Emotional Baseline & Interests</label>
+        <textarea id="emotional" placeholder="e.g. Generally settled. Sundowning pattern late afternoon. Enjoys talking about garden and grandchildren (Jack and Lily)."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clinical -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🩺</span>
+      <span class="card-title">Clinical Flags</span>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Falls Risk Detail</label>
+          <textarea id="fallsDetail" placeholder="e.g. HIGH. Sensor mat active bedside. Hip protectors during day. Non-slip footwear before mobilising."></textarea>
+        </div>
+        <div class="field">
+          <label>Waterlow Score / Skin Integrity</label>
+          <textarea id="skin" placeholder="e.g. Waterlow HIGH (score 20). Intact. Monitor heels and sacrum. Reposition 2-hourly."></textarea>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Swallowing / IDDSI</label>
+          <textarea id="swallowing" placeholder="e.g. IDDSI Level 5. Upright for all meals and medications."></textarea>
+        </div>
+        <div class="field">
+          <label>Allergies</label>
+          <textarea id="allergies" placeholder="e.g. NKDA — No Known Drug Allergies&#10;OR&#10;Penicillin — rash. Latex — anaphylaxis."></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mobility</label>
+        <input type="text" id="mobility" placeholder="e.g. 2-person assist with walking frame. Do not mobilise 1:1.">
+      </div>
+    </div>
+  </div>
+
+  <!-- Care Aids & Equipment -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🛠️</span>
+      <span class="card-title">Care Aids & Equipment</span>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Hearing Aids</label>
+          <input type="text" id="hearingAids" placeholder="e.g. Right ear only — check aid is in before speaking">
+        </div>
+        <div class="field">
+          <label>Glasses / Vision Aids</label>
+          <input type="text" id="glasses" placeholder="e.g. Reading glasses on bedside table — worn for meals">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Dentures</label>
+          <input type="text" id="dentures" placeholder="e.g. Full upper and lower — stored in blue denture cup overnight">
+        </div>
+        <div class="field">
+          <label>CPAP</label>
+          <input type="text" id="cpap" placeholder="e.g. CPAP every night — machine on bedside table">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Leg Protectors</label>
+          <input type="text" id="legProtectors" placeholder="e.g. Worn during the day on both lower legs">
+        </div>
+        <div class="field">
+          <label>Hip Protectors</label>
+          <input type="text" id="hipProtectors" placeholder="e.g. Worn during day — check fit after personal care">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Special Creams / Skin Products</label>
+          <input type="text" id="specialCreams" placeholder="e.g. Moisturiser to lower legs BD. Barrier cream to sacrum.">
+        </div>
+        <div class="field">
+          <label>Makeup / Personal Grooming</label>
+          <input type="text" id="makeup" placeholder="e.g. Likes lipstick applied daily — coral shade in top drawer">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Updated by -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">✏️</span>
+      <span class="card-title">Record Details</span>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Updated By (name & role)</label>
+          <input type="text" id="updatedBy" placeholder="e.g. J. Nguyen (RN)">
+        </div>
+        <div class="field">
+          <label>Date Updated</label>
+          <input type="date" id="updatedDate">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GitHub Settings Panel -->
+  <div class="github-panel" id="githubPanel">
+    <div class="github-panel-header">
+      <span class="github-panel-title">⚙️ GitHub Publishing Setup</span>
+      <button class="settings-btn" onclick="toggleGithubPanel()">✕ Close</button>
+    </div>
+    <div class="github-panel-body">
+      <div class="github-hint">
+        Enter your GitHub details once. Your token is stored in memory only — it is never saved to the file and disappears when you close the browser.
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>GitHub Username</label>
+          <input type="text" id="ghUsername" placeholder="e.g. lincolnhuggard20" oninput="updateGithubStatus()">
+        </div>
+        <div class="field">
+          <label>Repository Name</label>
+          <input type="text" id="ghRepo" placeholder="e.g. talleyhaven-profiles" oninput="updateGithubStatus()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Personal Access Token (stays private — never saved to file)</label>
+        <input type="password" id="ghToken" placeholder="ghp_..." oninput="updateGithubStatus()">
+      </div>
+      <div class="github-connected" id="githubConnected">
+        ✅ Ready to publish — details look complete
+      </div>
+    </div>
+  </div>
+
+  <!-- Output -->
+  <div class="output-section" id="outputSection">
+    <div class="output-header">
+      <span class="output-title">✅ Generated Profile HTML</span>
+      <div>
+        <button class="copy-btn" onclick="copyCode()">📋 Copy</button>
+        <button class="download-btn" onclick="downloadFile()">⬇️ Download File</button>
+      </div>
+    </div>
+    <div class="output-code" id="outputCode"></div>
+    <div class="output-actions">
+      <div style="display:flex;flex-direction:column;gap:0.75rem;width:100%;">
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+          <span style="font-size:0.78rem;color:var(--muted);">Save file as:</span>
+          <code style="font-size:0.8rem;background:var(--sage-pale);padding:0.2rem 0.5rem;border-radius:4px;color:var(--sage);" id="filenameDisplay"></code>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+          <span style="font-size:0.78rem;color:var(--muted);">GitHub path:</span>
+          <code style="font-size:0.8rem;background:var(--amber-pale);padding:0.2rem 0.5rem;border-radius:4px;color:var(--amber);font-weight:600;" id="githubPathDisplay"></code>
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);line-height:1.5;" id="nfcUrlDisplay"></div>
+        <button class="publish-btn" id="publishBtn" onclick="publishToGithub()">
+          🚀 Publish to GitHub
+        </button>
+        <div style="font-size:0.72rem;color:var(--muted);text-align:center;">
+          First time? <span style="color:var(--sky);cursor:pointer;text-decoration:underline;" onclick="toggleGithubPanel()">Enter your GitHub details above</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // GitHub credentials
+  const GH_USER = 'lincolnhuggard20';
+  const GH_REPO = 'talleyhaven-profiles';
+  const GH_TOKEN = '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';
+
+  // Flags definition — HIGH risk flags from CDECT/clinical assessments
+  const FLAGS = [
+    { label: '🔴 Falls Risk — HIGH', id: 'falls_high', color: 'risk-high' },
+    { label: '🔴 Waterlow — HIGH', id: 'waterlow_high', color: 'risk-high' },
+    { label: '🔴 Allergy Alert', id: 'allergy', color: 'risk-high' },
+    { label: '⚠️ Pressure Injury', id: 'pressure', color: 'risk-high' },
+    { label: '🧠 Dementia', id: 'dementia', color: 'info' },
+    { label: '♿ Wheelchair', id: 'wheelchair', color: 'info' },
+    { label: '🩸 Diabetes', id: 'diabetes', color: 'risk-med' },
+    { label: '🌙 Sundowning', id: 'sundowning', color: 'info' },
+    { label: '💊 Chemical Restraint', id: 'chem_restraint', color: 'risk-high' },
+    { label: '🚪 Environmental Restraint', id: 'env_restraint', color: 'risk-med' },
+    { label: '🔒 Mechanical Restraint', id: 'mech_restraint', color: 'risk-high' },
+  ];
+
+  let selectedFlags = [];
+  let alertLevel = 'none';
+  let nfrStatus = 'none';
+  let restrictivePractices = [];
+
+  // Build flags grid
+  const grid = document.getElementById('flagsGrid');
+  FLAGS.forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'flag-check';
+    el.dataset.id = f.id;
+    el.innerHTML = `<input type="checkbox"><div class="flag-dot"></div><span class="flag-label">${f.label}</span>`;
+    el.onclick = () => {
+      el.classList.toggle('checked');
+      if (selectedFlags.includes(f.id)) {
+        selectedFlags = selectedFlags.filter(x => x !== f.id);
+      } else {
+        selectedFlags.push(f.id);
+      }
+    };
+    grid.appendChild(el);
+  });
+
+  // Set today's date
+  document.getElementById('updatedDate').value = new Date().toISOString().split('T')[0];
+
+  // Pre-fill GitHub credentials
+  document.getElementById('ghUsername').value = GH_USER;
+  document.getElementById('ghRepo').value = GH_REPO;
+  document.getElementById('ghToken').value = GH_TOKEN;
+  document.getElementById('ghLoadToken').value = GH_TOKEN;
+  updateGithubStatus();
+  // Init NFR and RP state
+  nfrStatus = 'none';
+  restrictivePractices = [];
+
+  function setAlert(el) {
+    document.querySelectorAll('.alert-opt[data-val]').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    alertLevel = el.dataset.val;
+  }
+
+  function setNFR(el) {
+    document.querySelectorAll('.alert-opt[data-nfr]').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    nfrStatus = el.dataset.nfr;
+  }
+
+  function toggleRP(el) {
+    const val = el.dataset.rp;
+    el.classList.toggle('active');
+    if (restrictivePractices.includes(val)) {
+      restrictivePractices = restrictivePractices.filter(x => x !== val);
+    } else {
+      restrictivePractices.push(val);
+    }
+  }
+
+  function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+  function generateProfile() {
+    const fullName = val('fullName') || 'Resident Name';
+    const preferred = val('preferredName');
+    const room = val('roomNumber') || '??';
+    const ward = val('ward') || 'Acacia';
+    const wardEmojis = { Acacia:'🌿', Banksia:'🌼', Grevillea:'🌺', Jacaranda:'💜', Melaleuca:'🌿' };
+    const wardEmoji = wardEmojis[ward] || '🌿';
+
+    // Build NFR/RP suffix
+    let nfrParts = [];
+    if (nfrStatus === 'for_resus') nfrParts.push('FOR RESUSCITATION');
+    if (nfrStatus === 'nfr') nfrParts.push('NOT FOR RESUSCITATION');
+    if (restrictivePractices.length) {
+      const rpLabels = { chemical: 'Chemical Restraint', environmental: 'Environmental Restraint', mechanical: 'Mechanical Restraint' };
+      nfrParts.push('Restrictive Practice: ' + restrictivePractices.map(r => rpLabels[r]).join(', '));
+    }
+
+    // NFR bar (separate from main alert bar, always shown if set)
+    let nfrBarHTML = '';
+    if (nfrStatus === 'for_resus') {
+      nfrBarHTML = `\n<div class="alert-bar" style="background:#2d5a27;">✅ FOR RESUSCITATION${restrictivePractices.length ? ' &nbsp;|&nbsp; Restrictive Practice: ' + restrictivePractices.map(r => ({chemical:'Chemical',environmental:'Environmental',mechanical:'Mechanical'})[r]).join(', ') : ''}</div>`;
+    } else if (nfrStatus === 'nfr') {
+      nfrBarHTML = `\n<div class="alert-bar" style="background:#b84c4c;">🚫 NOT FOR RESUSCITATION${restrictivePractices.length ? ' &nbsp;|&nbsp; Restrictive Practice: ' + restrictivePractices.map(r => ({chemical:'Chemical',environmental:'Environmental',mechanical:'Mechanical'})[r]).join(', ') : ''}</div>`;
+    } else if (restrictivePractices.length) {
+      nfrBarHTML = `\n<div class="alert-bar amber"><span class="alert-icon">⚠️</span> Restrictive Practice: ${restrictivePractices.map(r => ({chemical:'Chemical',environmental:'Environmental',mechanical:'Mechanical'})[r]).join(', ')}</div>`;
+    }
+
+    const alertMsg = val('alertMessage');
+    let alertHTML = '';
+    if (alertLevel === 'red' && alertMsg) {
+      alertHTML = `\n<div class="alert-bar">\n  <span class="alert-icon">⚠️</span>\n  ${alertMsg}\n</div>`;
+    } else if (alertLevel === 'amber' && alertMsg) {
+      alertHTML = `\n<div class="alert-bar amber">\n  <span class="alert-icon">⚠️</span>\n  ${alertMsg}\n</div>`;
+    }
+
+    // Flags
+    const flagColorMap = {};
+    FLAGS.forEach(f => { flagColorMap[f.id] = { label: f.label, color: f.color }; });
+    const flagsHTML = selectedFlags.length
+      ? '\n<div class="flags-row">\n' + selectedFlags.map(id => {
+          const f = flagColorMap[id];
+          return `  <span class="flag ${f.color}">${f.label}</span>`;
+        }).join('\n') + '\n</div>'
+      : '';
+
+    function row(label, value) {
+      if (!value) return '';
+      return `  <div class="row">\n    <div class="row-label">${label}</div>\n    <div class="row-value">${value}</div>\n  </div>`;
+    }
+
+    function section(icon, title, rows, extra = '') {
+      const rowsHTML = rows.filter(Boolean).join('\n');
+      if (!rowsHTML && !extra) return '';
+      return `<div class="section">
+  <div class="section-header">
+    <span class="section-icon">${icon}</span>
+    <span class="section-title">${title}</span>
+  </div>
+${rowsHTML}${extra}
+</div>`;
+    }
+
+    function highlight(text, type = '') {
+      if (!text) return '';
+      return `\n  <div class="highlight-box${type ? ' '+type : ''}">${text}</div>`;
+    }
+
+    const nameNote = val('nameNote');
+    const commTips = val('commTips');
+
+    const sec1 = section('💬', 'Identity &amp; Communication', [
+      row('Preferred Name', preferred + (nameNote ? ` — ${nameNote}` : '')),
+      row('Language', val('language')),
+      row('Hearing', val('hearing')),
+      row('Vision', val('vision')),
+      row('Cognition', val('cognition')),
+    ], commTips ? highlight(`💡 <strong>Communication tip:</strong> ${commTips}`, 'sage') : '');
+
+    const sec2 = section('🌅', 'Routine &amp; Care Preferences', [
+      row('Wake Time', val('wakeTime')),
+      row('Morning Routine', val('morningRoutine')),
+      row('Personal Care', val('personalCare')),
+      row('Food &amp; Fluid', val('foodFluid')),
+      row('Rest', val('rest')),
+      row('Evening', val('evening')),
+    ]);
+
+    const distressNote = val('triggers') ? highlight('⚠️ <strong>If distressed:</strong> Do not restrain or raise voice. Step back, give space, call for senior carer support. Document any changes in progress notes.', 'rose') : '';
+
+    const sec3 = section('🤝', 'Behavioural &amp; Emotional', [
+      row('Known Triggers', val('triggers')),
+      row('De-escalation', val('deescalation')),
+      row('Emotional Baseline', val('emotional')),
+    ], distressNote);
+
+    const sec4 = section('🩺', 'Clinical Flags', [
+      row('Falls Risk', val('fallsDetail')),
+      row('Waterlow / Skin', val('skin')),
+      row('Swallowing', val('swallowing')),
+      row('Allergies', val('allergies')),
+      row('Mobility', val('mobility')),
+      row('Full Care Plan', 'Refer to care management system for full clinical documentation and medication chart'),
+    ]);
+
+    const aidsRows = [
+      row('Hearing Aids', val('hearingAids')),
+      row('Glasses', val('glasses')),
+      row('Dentures', val('dentures')),
+      row('CPAP', val('cpap')),
+      row('Leg Protectors', val('legProtectors')),
+      row('Hip Protectors', val('hipProtectors')),
+      row('Special Creams', val('specialCreams')),
+      row('Makeup / Grooming', val('makeup')),
+    ].filter(Boolean);
+
+    const sec5 = aidsRows.length ? section('🛠️', 'Care Aids &amp; Equipment', aidsRows) : '';
+
+    const updatedBy = val('updatedBy');
+    const updatedDate = val('updatedDate');
+    let dateDisplay = updatedDate;
+    if (updatedDate) {
+      const d = new Date(updatedDate + 'T00:00:00');
+      dateDisplay = d.toLocaleDateString('en-AU', { day:'numeric', month:'long', year:'numeric' });
+    }
+
+    const footer = `<div class="footer">
+  <div>
+    <div class="footer-label">Last updated</div>
+    <div class="footer-value"><span class="updated-dot"></span>${dateDisplay}${updatedBy ? ' — ' + updatedBy : ''}</div>
+  </div>
+  <div class="facility-tag">
+    Bluecare Talleyhaven<br>${ward} Ward · Room ${room}
+  </div>
+</div>`;
+
+    const preferredNote = preferred ? ` — Prefers to be called "${preferred}"` : '';
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Room ${room} — ${fullName}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage:#4a6741;--sage-light:#7a9c70;--sage-pale:#eef3ed;--warm-white:#faf9f6;
+    --ink:#1e2420;--ink-soft:#3d4a3e;--muted:#7a8a7b;--border:#d4ddd3;
+    --amber:#c8820a;--amber-pale:#fdf5e6;--rose:#b84c4c;--rose-pale:#fdf0f0;
+    --sky:#2e6b8a;--sky-pale:#eef5f9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--warm-white);color:var(--ink);min-height:100vh;padding-bottom:3rem}
+  .header{background:var(--sage);color:white;padding:1.5rem 1.25rem 1.25rem;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.06)}
+  .header::after{content:'';position:absolute;bottom:-60px;left:30%;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.04)}
+  .ward-pill{display:inline-block;background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.9);font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:0.25rem 0.7rem;border-radius:20px;margin-bottom:0.75rem}
+  .resident-name{font-family:'DM Serif Display',serif;font-size:2rem;line-height:1.15;color:#fff;margin-bottom:0.2rem}
+  .preferred-name{font-size:0.85rem;color:rgba(255,255,255,0.75);font-weight:400;font-style:italic}
+  .room-badge{position:absolute;top:1.25rem;right:1.25rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:white;border-radius:12px;padding:0.4rem 0.75rem;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-align:center;z-index:1}
+  .room-badge span{display:block;font-size:1.3rem;font-weight:300;letter-spacing:0}
+  .alert-bar{background:var(--rose);color:white;padding:0.6rem 1.25rem;font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem;letter-spacing:0.02em}
+  .alert-bar.amber{background:var(--amber)}
+  .flags-row{display:flex;gap:0.5rem;padding:1rem 1.25rem 0.25rem;flex-wrap:wrap}
+  .flag{display:flex;align-items:center;gap:0.35rem;padding:0.35rem 0.7rem;border-radius:20px;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+  .flag.risk-high{background:var(--rose-pale);color:var(--rose)}
+  .flag.risk-med{background:var(--amber-pale);color:var(--amber)}
+  .flag.risk-low{background:var(--sage-pale);color:var(--rose)}
+  .flag.info{background:var(--sky-pale);color:var(--sky)}
+  .section{margin:1rem 1.25rem 0;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:white;animation:fadeUp 0.4s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .section-header{background:var(--sage-pale);border-bottom:1px solid var(--border);padding:0.6rem 1rem;display:flex;align-items:center;gap:0.5rem}
+  .section-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--sage)}
+  .row{display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 1rem;border-bottom:1px solid #f0f0ee}
+  .row:last-child{border-bottom:none}
+  .row-label{font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);min-width:100px;flex-shrink:0;padding-top:0.1rem}
+  .row-value{font-size:0.88rem;color:var(--ink-soft);line-height:1.45;font-weight:400}
+  .row-value strong{color:var(--ink);font-weight:600}
+  .highlight-box{margin:0.75rem 1rem;padding:0.75rem 1rem;background:var(--amber-pale);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;font-size:0.85rem;color:var(--ink-soft);line-height:1.5}
+  .highlight-box.sage{background:var(--sage-pale);border-color:var(--sage-light)}
+  .highlight-box.rose{background:var(--rose-pale);border-color:var(--rose)}
+  .footer{margin:1.5rem 1.25rem 0;padding:0.75rem 1rem;border:1px solid var(--border);border-radius:10px;background:white;display:flex;justify-content:space-between;align-items:center}
+  .footer-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
+  .footer-value{font-size:0.78rem;color:var(--ink-soft);font-weight:500}
+  .updated-dot{width:8px;height:8px;border-radius:50%;background:var(--sage-light);display:inline-block;margin-right:0.35rem}
+  .facility-tag{font-size:0.68rem;color:var(--muted);text-align:right}
+  /* Lock screen */
+  .lock-screen{position:fixed;inset:0;background:var(--sage);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem}
+  .lock-box{background:white;border-radius:20px;padding:2rem 1.75rem;width:100%;max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+  .lock-logo{font-size:2rem;margin-bottom:0.5rem}
+  .lock-title{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--sage);margin-bottom:0.25rem}
+  .lock-sub{font-size:0.78rem;color:var(--muted);margin-bottom:1.5rem}
+  .lock-input{width:100%;font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:700;text-align:center;letter-spacing:0.3em;padding:0.75rem;border:2px solid var(--border);border-radius:10px;outline:none;color:var(--ink);background:var(--warm-white);transition:border-color 0.2s}
+  .lock-input:focus{border-color:var(--sage-light)}
+  .lock-input.error{border-color:var(--rose);animation:shake 0.3s ease}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .lock-btn{margin-top:1rem;width:100%;background:var(--sage);color:white;border:none;padding:0.75rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:background 0.15s}
+  .lock-btn:hover{background:#3a5232}
+  .lock-error{font-size:0.78rem;color:var(--rose);margin-top:0.6rem;min-height:1.1rem}
+  .lock-hint{font-size:0.7rem;color:var(--muted);margin-top:1rem}
+  .content-wrap{display:none}
+  .content-wrap.unlocked{display:block}
+</style>
+</head>
+<body>
+
+<!-- Lock Screen -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-logo">🏥</div>
+    <div class="lock-title">Bluecare Talleyhaven</div>
+    <div class="lock-sub">Enter staff PIN to view resident profile</div>
+    <input class="lock-input" id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••"
+      onkeydown="if(event.key==='Enter'){var p=document.getElementById('pinInput'),e=document.getElementById('lockError');if(p.value==='4228'){document.getElementById('lockScreen').style.display='none';document.getElementById('contentWrap').classList.add('unlocked');sessionStorage.setItem('bct_ok','1');}else{p.classList.add('error');e.textContent='Incorrect PIN — try again';p.value='';setTimeout(function(){p.classList.remove('error');e.textContent='';},1500);}}">
+    <button class="lock-btn"
+      onclick="var p=document.getElementById('pinInput'),e=document.getElementById('lockError');if(p.value==='4228'){document.getElementById('lockScreen').style.display='none';document.getElementById('contentWrap').classList.add('unlocked');sessionStorage.setItem('bct_ok','1');}else{p.classList.add('error');e.textContent='Incorrect PIN — try again';p.value='';setTimeout(function(){p.classList.remove('error');e.textContent='';},1500);}">Unlock</button>
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-hint">Session stays unlocked while browser is open</div>
+  </div>
+</div>
+<img src onerror="if(sessionStorage.getItem('bct_ok')==='1'){document.getElementById('lockScreen').style.display='none';document.getElementById('contentWrap').classList.add('unlocked');}else{document.getElementById('lockScreen').style.display='flex';}" style="display:none">
+
+<!-- Profile Content -->
+<div class="content-wrap" id="contentWrap">
+
+<div class="header">
+  <div class="room-badge">Room<span>${room}</span></div>
+  <div class="ward-pill">${wardEmoji} ${ward} Ward</div>
+  <div class="resident-name">${fullName}</div>
+  <div class="preferred-name">${preferredNote || ' '}</div>
+</div>
+${alertHTML}
+${nfrBarHTML}
+${flagsHTML}
+
+${sec1}
+
+${sec2}
+
+${sec3}
+
+${sec4}
+
+${sec5}
+
+${footer}
+
+</div>
+
+<div id="profile-data" style="display:none">${JSON.stringify({
+  schemaVersion: 2,
+  fullName: val('fullName') || 'Resident Name',
+  preferredName: val('preferredName'),
+  roomNumber: val('roomNumber') || '??',
+  ward: val('ward') || 'Acacia',
+  alertLevel: alertLevel,
+  alertMessage: val('alertMessage'),
+  nfrStatus: nfrStatus,  // 'none' | 'for_resus' | 'nfr'
+  restrictivePractices: [...restrictivePractices],
+  flags: [...selectedFlags],
+  nameNote: val('nameNote'),
+  language: val('language'),
+  hearing: val('hearing'),
+  vision: val('vision'),
+  cognition: val('cognition'),
+  commTips: val('commTips'),
+  wakeTime: val('wakeTime'),
+  morningRoutine: val('morningRoutine'),
+  personalCare: val('personalCare'),
+  foodFluid: val('foodFluid'),
+  rest: val('rest'),
+  evening: val('evening'),
+  triggers: val('triggers'),
+  deescalation: val('deescalation'),
+  emotional: val('emotional'),
+  fallsDetail: val('fallsDetail'),
+  skin: val('skin'),
+  swallowing: val('swallowing'),
+  allergies: val('allergies'),
+  mobility: val('mobility'),
+  hearingAids: val('hearingAids'),
+  glasses: val('glasses'),
+  dentures: val('dentures'),
+  cpap: val('cpap'),
+  legProtectors: val('legProtectors'),
+  hipProtectors: val('hipProtectors'),
+  specialCreams: val('specialCreams'),
+  makeup: val('makeup'),
+  updatedBy: val('updatedBy'),
+  updatedDate: val('updatedDate'),
+})}</div>
+
+</body>
+</html>`;
+
+    document.getElementById('outputCode').textContent = html;
+    currentHtml = html;
+    document.getElementById('outputSection').classList.add('visible');
+
+    const wardLower = ward.toLowerCase();
+    const filename = `room-${room.toLowerCase().replace(/\s+/g,'-')}.html`;
+    currentFilename = filename;
+    currentGithubPath = `residents/${wardLower}/${filename}`;
+
+    const githubPath = `talleyhaven-profiles / residents / ${wardLower} / ${filename}`;
+    const nfcUrl = `https://lincolnhuggard20.github.io/talleyhaven-profiles/residents/${wardLower}/${filename}`;
+
+    document.getElementById('filenameDisplay').textContent = filename;
+    document.getElementById('filenameDisplay').dataset.name = filename;
+    document.getElementById('githubPathDisplay').textContent = githubPath;
+    document.getElementById('nfcUrlDisplay').innerHTML = `🔗 <strong>NFC tag URL:</strong> <span style="font-family:monospace;font-size:0.75rem;color:var(--sky);">${nfcUrl}</span>`;
+
+    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function copyCode() {
+    const text = document.getElementById('outputCode').textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('✅ HTML copied to clipboard'));
+  }
+
+  function downloadFile() {
+    const text = document.getElementById('outputCode').textContent;
+    const filename = document.getElementById('filenameDisplay').dataset.name || 'resident-profile.html';
+    const blob = new Blob([text], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    showToast(`⬇️ Downloading ${filename}`);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function loadProfile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const html = e.target.result;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // PRIMARY: JSON data block (profiles generated after this update)
+        const jsonBlock = doc.getElementById('profile-data');
+        if (jsonBlock) {
+          try {
+            const data = JSON.parse(jsonBlock.textContent);
+            loadFromJSON(data);
+            document.getElementById('loadedFilename').textContent = file.name + ' ✦ full data restored';
+            document.getElementById('loadBanner').classList.add('visible');
+            showToast(`📂 Loaded ${file.name}`);
+            event.target.value = '';
+            return;
+          } catch(jsonErr) {
+            console.warn('JSON block found but failed to parse, falling back to text scraping', jsonErr);
+          }
+        }
+
+        // FALLBACK: text scraping for legacy profiles without JSON block
+        loadFromTextScrape(doc);
+        document.getElementById('loadedFilename').textContent = file.name + ' ⚠ legacy format — please check all fields';
+        document.getElementById('loadBanner').classList.add('visible');
+        showToast(`📂 Loaded ${file.name} (legacy)`);
+        event.target.value = '';
+
+      } catch(err) {
+        showToast('⚠️ Could not parse profile — is this a valid profile file?');
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function loadFromJSON(data) {
+    setField('fullName', data.fullName);
+    setField('preferredName', data.preferredName);
+    setField('roomNumber', data.roomNumber);
+    if (data.ward) {
+      const wardSelect = document.getElementById('ward');
+      for (let opt of wardSelect.options) {
+        if (opt.value === data.ward) { wardSelect.value = data.ward; break; }
+      }
+    }
+    if (data.alertLevel) {
+      const btn = document.querySelector(`.alert-opt[data-val="${data.alertLevel}"]`);
+      if (btn) setAlert(btn);
+    }
+    setField('alertMessage', data.alertMessage);
+
+    // NFR
+    if (data.nfrStatus) {
+      const nfrBtn = document.querySelector(`.alert-opt[data-nfr="${data.nfrStatus}"]`);
+      if (nfrBtn) setNFR(nfrBtn);
+    }
+
+    // Restrictive practices
+    restrictivePractices = [];
+    document.querySelectorAll('.alert-opt[data-rp]').forEach(el => el.classList.remove('active'));
+    if (Array.isArray(data.restrictivePractices)) {
+      data.restrictivePractices.forEach(rp => {
+        restrictivePractices.push(rp);
+        const el = document.querySelector(`.alert-opt[data-rp="${rp}"]`);
+        if (el) el.classList.add('active');
+      });
+    }
+
+    // Flags
+    selectedFlags = [];
+    document.querySelectorAll('.flag-check').forEach(fc => fc.classList.remove('checked'));
+    if (Array.isArray(data.flags)) {
+      data.flags.forEach(id => {
+        selectedFlags.push(id);
+        const el = document.querySelector(`.flag-check[data-id="${id}"]`);
+        if (el) el.classList.add('checked');
+      });
+    }
+
+    ['nameNote','language','hearing','vision','cognition','commTips',
+     'wakeTime','morningRoutine','personalCare','foodFluid','rest','evening',
+     'triggers','deescalation','emotional','fallsDetail','skin','swallowing',
+     'allergies','mobility',
+     'hearingAids','glasses','dentures','cpap','legProtectors','hipProtectors','specialCreams','makeup',
+     'updatedBy','updatedDate'
+    ].forEach(f => { if (data[f] !== undefined) setField(f, data[f]); });
+  }
+
+  function loadFromTextScrape(doc) {
+    function getText(selector) {
+      const el = doc.querySelector(selector);
+      return el ? el.textContent.trim() : '';
+    }
+    function getRowVal(labelText) {
+      for (const row of doc.querySelectorAll('.row')) {
+        const lbl = row.querySelector('.row-label');
+        const v = row.querySelector('.row-value');
+        if (lbl && v && lbl.textContent.trim().toLowerCase() === labelText.toLowerCase()) return v.textContent.trim();
+      }
+      return '';
+    }
+    const roomBadge = doc.querySelector('.room-badge');
+    setField('roomNumber', roomBadge ? roomBadge.querySelector('span')?.textContent.trim() : '');
+    const wardPill = getText('.ward-pill').replace(/^[\u{1F300}-\u{1FFFF}\s]+/u, '').replace(' Ward','').trim();
+    const wardSelect = document.getElementById('ward');
+    for (let opt of wardSelect.options) { if (opt.value === wardPill) { wardSelect.value = wardPill; break; } }
+    setField('fullName', getText('.resident-name'));
+    const prefRaw = getText('.preferred-name');
+    const prefMatch = prefRaw.match(/called "(.+?)"/);
+    setField('preferredName', prefMatch ? prefMatch[1] : prefRaw.replace(/^—\s*/,'').replace(/Prefers to be called /,'').replace(/"/g,''));
+    const alertBar = doc.querySelector('.alert-bar');
+    if (alertBar) {
+      const isAmber = alertBar.classList.contains('amber');
+      setField('alertMessage', alertBar.textContent.replace('⚠️','').trim());
+      const btn = document.querySelector(`.alert-opt[data-val="${isAmber ? 'amber' : 'red'}"]`);
+      if (btn) setAlert(btn);
+    } else {
+      const noneBtn = document.querySelector('.alert-opt[data-val="none"]');
+      if (noneBtn) setAlert(noneBtn);
+    }
+    selectedFlags = [];
+    document.querySelectorAll('.flag-check').forEach(fc => fc.classList.remove('checked'));
+    doc.querySelectorAll('.flags-row .flag').forEach(flagEl => {
+      const label = flagEl.textContent.trim();
+      FLAGS.forEach(f => {
+        if (f.label === label) {
+          selectedFlags.push(f.id);
+          const el = document.querySelector(`.flag-check[data-id="${f.id}"]`);
+          if (el) el.classList.add('checked');
+        }
+      });
+    });
+    const prefNameRow = getRowVal('Preferred Name');
+    const dashIdx = prefNameRow.indexOf(' — ');
+    if (dashIdx > -1) setField('nameNote', prefNameRow.substring(dashIdx + 3));
+    setField('language', getRowVal('Language'));
+    setField('hearing', getRowVal('Hearing'));
+    setField('vision', getRowVal('Vision'));
+    setField('cognition', getRowVal('Cognition'));
+    doc.querySelectorAll('.highlight-box.sage').forEach(h => {
+      setField('commTips', h.textContent.replace('💡','').replace('Communication tip:','').trim());
+    });
+    setField('wakeTime', getRowVal('Wake Time'));
+    setField('morningRoutine', getRowVal('Morning Routine'));
+    setField('personalCare', getRowVal('Personal Care'));
+    setField('foodFluid', getRowVal('Food & Fluid'));
+    setField('rest', getRowVal('Rest'));
+    setField('evening', getRowVal('Evening'));
+    setField('triggers', getRowVal('Known Triggers'));
+    setField('deescalation', getRowVal('De-escalation'));
+    setField('emotional', getRowVal('Emotional Baseline'));
+    setField('fallsDetail', getRowVal('Falls Risk'));
+    setField('skin', getRowVal('Skin'));
+    setField('swallowing', getRowVal('Swallowing'));
+    setField('allergies', getRowVal('Allergies'));
+    setField('mobility', getRowVal('Mobility'));
+    const footerVal = getText('.footer-value');
+    const dashPos = footerVal.indexOf(' — ');
+    if (dashPos > -1) setField('updatedBy', footerVal.substring(dashPos + 3));
+  }
+
+  function setField(id, value) {
+    const el = document.getElementById(id);
+    if (el && value) el.value = value;
+  }
+
+  // --- GitHub Publishing ---
+  let currentGithubPath = '';
+  let currentFilename = '';
+  let currentHtml = '';
+
+  // --- Load from GitHub ---
+  function openGithubLoadModal() {
+    document.getElementById('githubLoadModal').classList.add('visible');
+    document.getElementById('ghLoadToken').value = GH_TOKEN;
+  }
+
+  function closeGithubLoadModal() {
+    document.getElementById('githubLoadModal').classList.remove('visible');
+  }
+
+  function closeGithubLoadModalOnOverlay(e) {
+    if (e.target === document.getElementById('githubLoadModal')) closeGithubLoadModal();
+  }
+
+  async function fetchFromGithub() {
+    const ward = document.getElementById('ghLoadWard').value.trim();
+    const room = document.getElementById('ghLoadRoom').value.trim();
+    const token = document.getElementById('ghLoadToken').value.trim();
+
+    console.log('fetchFromGithub called', { ward, room, token: token ? token.substring(0,10)+'...' : 'EMPTY' });
+
+    if (!room) { showToast('⚠️ Please enter a room number'); return; }
+    if (!token) { showToast('⚠️ Please enter your GitHub token'); return; }
+
+    const filename = `room-${room}.html`;
+    const path = `residents/${ward}/${filename}`;
+    const apiUrl = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${path}`;
+
+    console.log('Fetching URL:', apiUrl);
+
+    document.getElementById('ghLoadIndicator').classList.add('visible');
+
+    try {
+      const res = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+
+      console.log('Response status:', res.status);
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        console.log('Error body:', errBody);
+        if (res.status === 404) {
+          showToast(`⚠️ No profile found for ${ward} room ${room}`);
+        } else if (res.status === 401) {
+          showToast('⚠️ Token rejected — check your GitHub token');
+        } else {
+          showToast(`⚠️ GitHub error: ${res.status}`);
+        }
+        return;
+      }
+
+      const data = await res.json();
+      console.log('Got data, content length:', data.content ? data.content.length : 0, 'download_url:', data.download_url);
+
+      let html = '';
+
+      if (data.content && data.content.trim()) {
+        // Small file — decode base64 inline content
+        console.log('Using inline base64 content');
+        const base64 = data.content.replace(/\n/g, '');
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        html = new TextDecoder('utf-8').decode(bytes);
+      } else if (data.download_url) {
+        // Large file — fetch raw content directly
+        console.log('File too large for inline — fetching raw from:', data.download_url);
+        const rawRes = await fetch(data.download_url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!rawRes.ok) {
+          showToast(`⚠️ Could not download file: ${rawRes.status}`);
+          return;
+        }
+        html = await rawRes.text();
+      } else {
+        showToast('⚠️ Could not retrieve file content from GitHub');
+        return;
+      }
+
+      console.log('HTML length:', html.length);
+
+      // Sync to publish panel
+      document.getElementById('ghToken').value = GH_TOKEN;
+      document.getElementById('ghUsername').value = GH_USER;
+      document.getElementById('ghRepo').value = GH_REPO;
+      updateGithubStatus();
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const jsonBlock = doc.getElementById('profile-data');
+      console.log('JSON block found:', !!jsonBlock);
+
+      if (jsonBlock) {
+        try {
+          console.log('JSON content preview:', jsonBlock.textContent.substring(0, 100));
+          const rawJson = jsonBlock.textContent.trim();
+          const profileData = JSON.parse(rawJson);
+          loadFromJSON(profileData);
+          document.getElementById('loadedFilename').textContent = `☁️ ${ward}/room-${room}.html — loaded from GitHub`;
+          document.getElementById('loadBanner').classList.add('visible');
+          showToast(`✅ Loaded ${ward} / room ${room}`);
+          closeGithubLoadModal();
+        } catch(e) {
+          console.error('JSON parse error:', e);
+          showToast('⚠️ Could not parse profile data');
+        }
+      } else {
+        console.log('No JSON block — using text scrape');
+        try {
+          loadFromTextScrape(doc);
+          document.getElementById('loadedFilename').textContent = `☁️ ${ward}/room-${room}.html — loaded from GitHub`;
+          document.getElementById('loadBanner').classList.add('visible');
+          showToast(`✅ Loaded ${ward} / room ${room}`);
+          closeGithubLoadModal();
+        } catch(e) {
+          console.error('Text scrape error:', e);
+          showToast('⚠️ Could not parse profile — ' + e.message);
+        }
+      }
+
+    } catch(err) {
+      showToast('⚠️ Network error — check your connection');
+      console.error(err);
+    } finally {
+      document.getElementById('ghLoadIndicator').classList.remove('visible');
+    }
+  }
+
+  // --- GitHub Publishing ---
+
+  function toggleGithubPanel() {
+    const panel = document.getElementById('githubPanel');
+    panel.classList.toggle('visible');
+    if (panel.classList.contains('visible')) {
+      document.getElementById('ghUsername').value = GH_USER;
+      document.getElementById('ghRepo').value = GH_REPO;
+      document.getElementById('ghToken').value = GH_TOKEN;
+      updateGithubStatus();
+    }
+  }
+
+  function updateGithubStatus() {
+    const user = document.getElementById('ghUsername').value.trim();
+    const repo = document.getElementById('ghRepo').value.trim();
+    const token = document.getElementById('ghToken').value.trim();
+    const connected = document.getElementById('githubConnected');
+    if (user && repo && token && token.startsWith('ghp_')) {
+      connected.classList.add('visible');
+    } else {
+      connected.classList.remove('visible');
+    }
+  }
+
+  async function publishToGithub() {
+    const user = GH_USER;
+    const repo = GH_REPO;
+    const token = GH_TOKEN;
+
+    if (!user || !repo || !token) {
+      document.getElementById('githubPanel').classList.add('visible');
+      showToast('⚠️ Please enter your GitHub details first');
+      return;
+    }
+
+    if (!currentHtml) {
+      showToast('⚠️ Generate a profile first');
+      return;
+    }
+
+    const btn = document.getElementById('publishBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,0.3);border-top-color:white;"></div> Publishing…';
+
+    try {
+      const apiPath = `https://api.github.com/repos/${user}/${repo}/contents/${currentGithubPath}`;
+
+      // Check if file already exists (need its SHA to update)
+      let sha = null;
+      try {
+        const checkRes = await fetch(apiPath, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+        if (checkRes.ok) {
+          const existing = await checkRes.json();
+          sha = existing.sha;
+        }
+      } catch(e) { /* file doesn't exist yet, that's fine */ }
+
+      // Encode content as base64
+      const encoded = btoa(unescape(encodeURIComponent(currentHtml)));
+
+      const body = {
+        message: `Update ${currentFilename}`,
+        content: encoded,
+        ...(sha ? { sha } : {})
+      };
+
+      const res = await fetch(apiPath, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        const ward = document.getElementById('ward').value.toLowerCase();
+        const liveUrl = `https://${user}.github.io/${repo}/residents/${ward}/${currentFilename}`;
+        document.getElementById('nfcUrlDisplay').innerHTML = `✅ <strong>Published!</strong> NFC tag URL: <span style="font-family:monospace;font-size:0.75rem;color:var(--sky);">${liveUrl}</span> <span style="color:var(--muted)">(may take 1–2 min to go live)</span>`;
+        showToast('🚀 Profile published to GitHub!');
+      } else {
+        const err = await res.json();
+        showToast(`⚠️ GitHub error: ${err.message}`);
+        console.error(err);
+      }
+
+    } catch(err) {
+      showToast('⚠️ Network error — check your connection');
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🚀 Publish to GitHub';
+    }
+  }
+
+  function openImportModal() {
+    document.getElementById('importModal').classList.add('visible');
+    setTimeout(() => document.getElementById('carePlanText').focus(), 100);
+  }
+
+  function closeImportModal() {
+    document.getElementById('importModal').classList.remove('visible');
+  }
+
+  function closeModalOnOverlay(e) {
+    if (e.target === document.getElementById('importModal')) closeImportModal();
+  }
+
+  function runImport() {
+    const text = document.getElementById('carePlanText').value.trim();
+    if (!text) { showToast('⚠️ Please paste some care plan text first'); return; }
+
+    document.getElementById('parsingIndicator').classList.add('visible');
+    document.getElementById('importBtn').disabled = true;
+
+    // Small delay so spinner renders before parsing
+    setTimeout(() => {
+      try {
+        parseCarePlan(text);
+        closeImportModal();
+        showToast('✅ Fields pre-filled — review and adjust as needed');
+        document.getElementById('loadBanner').classList.add('visible');
+        document.getElementById('loadedFilename').textContent = 'Care plan import — please review all fields';
+      } catch(err) {
+        showToast('⚠️ Something went wrong during parsing');
+        console.error(err);
+      } finally {
+        document.getElementById('parsingIndicator').classList.remove('visible');
+        document.getElementById('importBtn').disabled = false;
+      }
+    }, 80);
+  }
+
+  function parseCarePlan(text) {
+    const t = text;
+    const lower = t.toLowerCase();
+
+    function extract(patterns) {
+      for (const pattern of patterns) {
+        const m = t.match(pattern);
+        if (m && m[1] && m[1].trim()) return m[1].trim();
+      }
+      return null;
+    }
+
+    function extractLine(keywords) {
+      const lines = t.split(/\n/);
+      for (const line of lines) {
+        const ll = line.toLowerCase();
+        for (const kw of keywords) {
+          if (ll.includes(kw)) {
+            // Return the part after the colon/dash if present
+            const colonIdx = line.indexOf(':');
+            const dashIdx = line.indexOf('—');
+            const idx = colonIdx > -1 ? colonIdx : dashIdx > -1 ? dashIdx : -1;
+            if (idx > -1) return line.substring(idx + 1).trim();
+            return line.trim();
+          }
+        }
+      }
+      return null;
+    }
+
+    // --- Identity ---
+    const nameVal = extract([
+      /(?:resident|patient|name)[:\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/,
+      /^([A-Z][a-z]+\s+[A-Z][a-z]+)/m
+    ]);
+    if (nameVal) setField('fullName', nameVal);
+
+    const prefName = extract([
+      /(?:preferred name|known as|likes to be called|goes by|nickname)[:\s"]+([A-Za-z]+)/i,
+      /["']([A-Za-z]+)['"]\s*(?:preferred|nickname)/i
+    ]);
+    if (prefName) setField('preferredName', prefName);
+
+    const roomVal = extract([
+      /room\s*(?:number|no\.?|#)?\s*[:\-]?\s*(\d+[A-Za-z]?)/i,
+      /(?:rm|room)[.\s]*(\d+[A-Za-z]?)/i
+    ]);
+    if (roomVal) setField('roomNumber', roomVal);
+
+    // Ward detection
+    const wards = ['acacia','banksia','grevillea','jacaranda','melaleuca'];
+    for (const ward of wards) {
+      if (lower.includes(ward)) {
+        const wardSelect = document.getElementById('ward');
+        const capitalised = ward.charAt(0).toUpperCase() + ward.slice(1);
+        for (let opt of wardSelect.options) {
+          if (opt.value === capitalised) { wardSelect.value = capitalised; break; }
+        }
+        break;
+      }
+    }
+
+    // --- Communication ---
+    const lang = extractLine(['language','interpreter','speaks']);
+    if (lang) setField('language', lang);
+
+    const hearing = extractLine(['hearing aid','hearing loss','hearing impair','deaf','hard of hearing']);
+    if (hearing) setField('hearing', hearing);
+
+    const vision = extractLine(['vision','visual','glasses','sight','blind']);
+    if (vision) setField('vision', vision);
+
+    const cognition = extractLine(['cognition','dementia','cognitive','orientat','memory','confusion']);
+    if (cognition) setField('cognition', cognition);
+
+    // --- Routine ---
+    const wakeTime = extractLine(['wake','morning routine start','rise','gets up']);
+    if (wakeTime) setField('wakeTime', wakeTime);
+
+    const morningRoutine = extractLine(['morning routine','morning care','am care','shower','morning preference']);
+    if (morningRoutine) setField('morningRoutine', morningRoutine);
+
+    const personalCare = extractLine(['personal care','hygiene','showering preference','bathing','carer preference']);
+    if (personalCare) setField('personalCare', personalCare);
+
+    const foodFluid = extract([
+      /(?:diet|food|nutrition|iddsi|texture|fluid)[^\n]*?([^\n]{10,100})/i
+    ]) || extractLine(['diet','iddsi','texture modified','minced','pureed','thickened','fluid','nutrition']);
+    if (foodFluid) setField('foodFluid', foodFluid);
+
+    const rest = extractLine(['rest','nap','sleep during day','afternoon']);
+    if (rest) setField('rest', rest);
+
+    const evening = extractLine(['evening','night routine','bed time','bedtime','pm routine']);
+    if (evening) setField('evening', evening);
+
+    // --- Behavioural ---
+    const triggers = extractLine(['trigger','distress','agitat','upset','behaviou']);
+    if (triggers) setField('triggers', triggers);
+
+    const deescalation = extractLine(['de-escal','deescal','calm','redirect','manage','approach when']);
+    if (deescalation) setField('deescalation', deescalation);
+
+    const emotional = extractLine(['emotional','mood','personality','enjoys','interests','baseline','sundown']);
+    if (emotional) setField('emotional', emotional);
+
+    // --- Clinical ---
+    const falls = extractLine(['falls risk','fall risk','falls assessment']);
+    if (falls) setField('fallsDetail', falls);
+
+    const skin = extractLine(['skin','wound','pressure','integrity','heel','sacrum']);
+    if (skin) setField('skin', skin);
+
+    const swallowing = extractLine(['swallow','dysphagia','iddsi','texture','upright for meal','aspiration']);
+    if (swallowing) setField('swallowing', swallowing);
+
+    const allergies = extract([
+      /allerg(?:y|ies)[:\s]+([^\n.]{3,80})/i,
+      /nkda/i
+    ]);
+    if (allergies) {
+      setField('allergies', /nkda/i.test(t) ? 'NKDA — No Known Drug Allergies' : allergies);
+    }
+
+    const mobility = extractLine(['mobility','mobilise','mobilize','transfer','walk','wheelchair','1-person','2-person','one person','two person']);
+    if (mobility) setField('mobility', mobility);
+
+    // --- Auto-tick flags ---
+    const flagMap = [
+      { id: 'falls_high', terms: ['falls risk: high','fall risk: high','high falls','high fall risk'] },
+      { id: 'falls_med',  terms: ['falls risk: medium','falls risk: moderate','medium falls','moderate falls'] },
+      { id: 'falls_low',  terms: ['falls risk: low','low falls'] },
+      { id: 'skin_mon',   terms: ['monitor skin','skin monitor','skin intact — monitor','skin: monitor'] },
+      { id: 'skin_ok',    terms: ['skin intact','skin: intact','no skin concerns'] },
+      { id: 'pressure',   terms: ['pressure injury','pressure area','pressure ulcer','wound'] },
+      { id: 'no_allergy', terms: ['nkda','no known allerg','no allergies'] },
+      { id: 'allergy',    terms: ['allergy alert','drug allergy','allergic to'] },
+      { id: 'hearing_aid',terms: ['hearing aid','hearing aids'] },
+      { id: 'vision_imp', terms: ['vision impair','visual impair','blind','low vision'] },
+      { id: 'iddsi',      terms: ['minced','pureed','texture modified','iddsi'] },
+      { id: 'thickened',  terms: ['thickened fluid','thickened drink','mildly thick','moderately thick'] },
+      { id: 'dementia',   terms: ['dementia','alzheimer'] },
+      { id: 'two_person', terms: ['2-person','two person','2 person assist','two-person'] },
+      { id: 'wheelchair', terms: ['wheelchair','wheel chair'] },
+      { id: 'diabetes',   terms: ['diabetes','diabetic','insulin','bsl'] },
+      { id: 'cardiac',    terms: ['cardiac','heart failure','af ','atrial fib','ccf'] },
+      { id: 'sundowning', terms: ['sundown','sundowning'] },
+    ];
+
+    flagMap.forEach(({ id, terms }) => {
+      if (terms.some(term => lower.includes(term))) {
+        if (!selectedFlags.includes(id)) {
+          selectedFlags.push(id);
+          const el = document.querySelector(`.flag-check[data-id="${id}"]`);
+          if (el) el.classList.add('checked');
+        }
+      }
+    });
+
+    // Alert level suggestion
+    if (lower.includes('high falls') || lower.includes('falls risk: high') || lower.includes('high fall risk')) {
+      const btn = document.querySelector('.alert-opt[data-val="red"]');
+      if (btn) setAlert(btn);
+      const alertMsg = document.getElementById('alertMessage');
+      if (alertMsg && !alertMsg.value) alertMsg.value = 'HIGH FALLS RISK — Please check sensor mat placement on entry.';
+    }
+  }
+</script>
+</body>
+</html>
