@@ -63,7 +63,16 @@
   .lock-hint{font-size:0.7rem;color:var(--muted);margin-top:1rem}
   .content-wrap{display:none}
   .content-wrap.unlocked{display:block}
+  .test-banner{background:#e65c00;color:white;text-align:center;padding:0.5rem 1rem;font-size:0.78rem;font-weight:700;letter-spacing:0.05em;}
 </style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-46VKT47H7S"></script>
+<script>
+  window.dataLayer=window.dataLayer||[];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js',new Date());
+  gtag('config','G-46VKT47H7S');
+  gtag('event','profile_view',{ward:'Acacia',room:'4',tap_type:'live'});
+</script>
 </head>
 <body>
 
@@ -86,6 +95,7 @@
 <!-- Profile Content -->
 <div class="content-wrap" id="contentWrap">
 
+
 <div class="header">
   <div class="room-badge">Room<span>4</span></div>
   <div class="ward-pill">🌿 Acacia Ward</div>
@@ -98,14 +108,14 @@
   HIGH FALLS RISK — Please check sensor mat placement on entry.
 </div>
 
+<div class="alert-bar" style="background:#2d5a27;">✅ FOR RESUSCITATION &nbsp;|&nbsp; Restrictive Practice: Chemical</div>
+
 <div class="flags-row">
-  <span class="flag risk-high">🔴 Falls — High</span>
-  <span class="flag info">💧 Thickened Fluids</span>
+  <span class="flag risk-high">🔴 Falls Risk — HIGH</span>
   <span class="flag info">🧠 Dementia</span>
-  <span class="flag info">♿ Wheelchair</span>
   <span class="flag risk-med">🩸 Diabetes</span>
-  <span class="flag risk-med">❤️ Cardiac</span>
   <span class="flag info">🌙 Sundowning</span>
+  <span class="flag risk-high">💊 Chemical Restraint</span>
 </div>
 
 <div class="section">
@@ -153,10 +163,6 @@
     <div class="row-value">Directs own care – staff assist as instructed</div>
   </div>
   <div class="row">
-    <div class="row-label">Food &amp; Fluid</div>
-    <div class="row-value">Regular</div>
-  </div>
-  <div class="row">
     <div class="row-label">Rest</div>
     <div class="row-value">Rests intermittently due to fatigue</div>
   </div>
@@ -196,7 +202,7 @@
     <div class="row-value">High p</div>
   </div>
   <div class="row">
-    <div class="row-label">Skin</div>
+    <div class="row-label">Waterlow / Skin</div>
     <div class="row-value">At risk – prolonged sitting</div>
   </div>
   <div class="row">
@@ -217,6 +223,22 @@
   </div>
 </div>
 
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🛠️</span>
+    <span class="section-title">Care Aids &amp; Equipment</span>
+  </div>
+  <div class="row">
+    <div class="row-label">Equipment</div>
+    <div class="row-value">👂 Hearing Aids &nbsp;·&nbsp; 👓 Glasses &nbsp;·&nbsp; 🦷 Dentures &nbsp;·&nbsp; 🩱 Hip Protectors &nbsp;·&nbsp; 🦵 Leg Protectors &nbsp;·&nbsp; 🧴 Special Creams &nbsp;·&nbsp; 🔋 Oxygen</div>
+  </div>
+  <div class="row">
+    <div class="row-label">Notes</div>
+    <div class="row-value">Hearing aid only in the left ear
+Wears glasses for reading only</div>
+  </div>
+</div>
+
 <div class="footer">
   <div>
     <div class="footer-label">Last updated</div>
@@ -229,7 +251,7 @@
 
 </div>
 
-<div id="profile-data" style="display:none">{"schemaVersion":1,"fullName":"Sarah Collins","preferredName":"Sarah","roomNumber":"4","ward":"Acacia","alertLevel":"red","alertMessage":"HIGH FALLS RISK — Please check sensor mat placement on entry.","flags":["falls_high","thickened","dementia","wheelchair","diabetes","cardiac","sundowning"],"nameNote":"","language":"English","hearing":"Hearing aid left ear","vision":"Intact","cognition":"Intact","commTips":"","wakeTime":"~9:00am (prefers late start)","morningRoutine":"Shower after breakfast, uses phone/music","personalCare":"Directs own care – staff assist as instructed","foodFluid":"Regular","rest":"Rests intermittently due to fatigue","evening":"Late sleeper, prefers TV/music","triggers":"Loss of control, being spoken over, rushed care","deescalation":"Give control back, explain actions, respect choices","emotional":"Independent, can become frustrated if ignored","fallsDetail":"High p","skin":"At risk – prolonged sitting","swallowing":"Normal","allergies":"Penicillin","mobility":"Poor balance, impulsive transfers at times","updatedBy":"Lincoln Huggard","updatedDate":"2026-03-22"}</div>
+<div id="profile-data" style="display:none">{"schemaVersion":2,"fullName":"Sarah Collins","preferredName":"Sarah","roomNumber":"4","ward":"Acacia","alertLevel":"red","alertMessage":"HIGH FALLS RISK — Please check sensor mat placement on entry.","nfrStatus":"for_resus","restrictivePractices":["chemical"],"flags":["falls_high","thickened","dementia","wheelchair","diabetes","cardiac","sundowning","chem_restraint"],"nameNote":"","language":"English","hearing":"Hearing aid left ear","vision":"Intact","cognition":"Intact","commTips":"","wakeTime":"~9:00am (prefers late start)","morningRoutine":"Shower after breakfast, uses phone/music","personalCare":"Directs own care – staff assist as instructed","rest":"Rests intermittently due to fatigue","evening":"Late sleeper, prefers TV/music","triggers":"Loss of control, being spoken over, rushed care","deescalation":"Give control back, explain actions, respect choices","emotional":"Independent, can become frustrated if ignored","fallsDetail":"High p","skin":"At risk – prolonged sitting","swallowing":"Normal","allergies":"Penicillin","mobility":"Poor balance, impulsive transfers at times","selectedAids":["aid_hearing","aid_glasses","aid_dentures","aid_hip","aid_leg","aid_creams","aid_oxygen"],"aidsNotes":"Hearing aid only in the left ear\nWears glasses for reading only","gaId":"G-46VKT47H7S","profileMode":"live","updatedBy":"Lincoln Huggard","updatedDate":"2026-03-22"}</div>
 
 </body>
 </html>
